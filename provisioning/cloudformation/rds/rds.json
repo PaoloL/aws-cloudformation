@@ -1,0 +1,172 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "PreProduction - Demo on Cloud RDS Tier",
+
+  "Parameters" : {
+
+    "Project" : {
+      "Type" : "String"
+    },
+
+    "Environment" : {
+      "Type" : "String"
+    },
+	
+    "Service" : {
+      "Type" : "String"
+    },
+
+    "VpcId" : {
+      "Type" : "String"
+    },
+
+    "Subnets" : {
+      "Type" : "CommaDelimitedList"
+    },
+
+    "DBUsername": {
+      "Type": "String"
+    },
+
+    "DBPassword": {
+      "NoEcho": "true",
+      "Type": "String"
+    },
+
+    "InstanceType" : {
+      "Type" : "String"
+    },
+
+    "ReadReplica" : {
+      "Type" : "String"
+    },
+
+    "DBAllocatedStorage" : {
+      "Type": "Number"
+    },
+    
+    "APIBackendInstanceSecurityGroup" : {
+      "Type" : "String"
+    },
+
+    "AUTHBackendInstanceSecurityGroup" : {
+      "Type" : "String"
+    },
+	
+	  "ElasticacheSecurityGroup"  : {
+      "Type" : "String"
+    },
+
+    "MyIpAddress" : {
+      "Type" : "String"
+    },
+	
+    "MultiAZ" : {
+      "Type" : "String"
+    }
+  },
+
+  "Conditions" : {
+    "CreateReadReplica" : { "Fn::Equals" : [ {"Ref" : "ReadReplica" }, "True" ] }
+  },
+
+  "Resources" : {
+
+    "DBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+        "DBSubnetGroupDescription" :  {"Fn::Join" : [ " ", [ "Subnets available for", { "Ref" : "Project"} , { "Ref" : "Environment"}, { "Ref" : "Service"}]]},
+        "SubnetIds" : { "Ref" : "Subnets" }
+      }
+    },
+
+    "VPCSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" :
+        {
+           "GroupDescription" : {"Fn::Join" : [ " ", [ "Security group", { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}]]} ,
+           "VpcId" : { "Ref" : "VpcId" },
+           "SecurityGroupIngress" :
+           [
+          	{
+            		"IpProtocol" : "tcp",
+            		"FromPort" : "3306",
+            		"ToPort" : "3306",
+            		"SourceSecurityGroupId" :  { "Ref" : "APIBackendInstanceSecurityGroup" }
+          	},
+            {
+                "IpProtocol" : "tcp",
+                "FromPort" : "3306",
+                "ToPort" : "3306",
+                "SourceSecurityGroupId" :  { "Ref" : "AUTHBackendInstanceSecurityGroup" }
+            },
+          	{
+            		"IpProtocol" : "tcp",
+            		"FromPort" : "3306",
+            		"ToPort" : "3306",
+            		"SourceSecurityGroupId" : { "Ref" : "ElasticacheSecurityGroup" }
+          	},
+          	{
+            		"IpProtocol" : "tcp",
+            		"FromPort" : "3306",
+            		"ToPort" : "3306",
+            		"CidrIp" : { "Ref" : "MyIpAddress" }
+          	}
+          ]
+        }
+    },
+
+    "DBParameterGroup" : {
+        "Type": "AWS::RDS::DBParameterGroup",
+        "Properties" :
+        {
+            "Description" : {"Fn::Join" : [ " ", "Parameters Group for", [ "Security group", { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}]]},
+            "Family" : "MySQL5.6"
+        }
+    },
+
+    "MyMasterDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "DBInstanceIdentifier": {"Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}]]},
+        "StorageType": "gp2",
+		    "AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
+        "DBInstanceClass" : { "Ref" : "InstanceType" },
+        "MultiAZ" : { "Ref" : "MultiAZ" },
+        "BackupRetentionPeriod" : "15",
+        "DBParameterGroupName" : { "Ref" : "DBParameterGroup" },
+        "PreferredBackupWindow": "03:00-05:00",
+        "PreferredMaintenanceWindow": "sat:23:00-sun:02:00",
+        "Engine" : "MySQL",
+        "EngineVersion" : "5.6",
+        "MasterUsername" : { "Ref" : "DBUsername" } ,
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        "DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
+        "VPCSecurityGroups" : [ { "Ref" : "VPCSecurityGroup" }  ]
+      }
+    },
+
+    "MyReadReplicaDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Condition" : "CreateReadReplica",
+      "Properties" : {
+        "SourceDBInstanceIdentifier" : { "Ref" : "MyMasterDB" },
+        "DBInstanceClass" : { "Ref" : "InstanceType" },
+        "Tags" : [{ "Key"  : "Name", "Value" : "Read Replica Database" }]
+      }
+    }
+
+	},
+	
+  "Outputs" : {
+    "JDBCMasterConnectionString": {
+      "Description" : "JDBC MASTER connection string for database",
+      "Value" : { "Fn::Join": [ "", [ "mysql://",
+                                      { "Fn::GetAtt": [ "MyMasterDB", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "MyMasterDB", "Endpoint.Port" ] }
+                                      ]]}
+    }
+    }
+}

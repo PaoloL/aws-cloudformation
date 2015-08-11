@@ -1,0 +1,46 @@
+[
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "auth"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue" : "be"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-6f0af20a"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-ca0d75af,subnet-7b3c5c0c"
+  },
+  {
+    "ParameterKey": "WebServerPort",
+    "ParameterValue": "8000"
+  },
+  {
+    "ParameterKey": "IngressCidrIP",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "SSLCertificateId",
+    "ParameterValue": "arn:aws:iam::954831811256:server-certificate/cloudfront/beefreeio/beefree.io"
+  },
+  {
+	  "ParameterKey": "HealthCheckUrl",
+	  "ParameterValue": "/api/heartbeat"
+  },
+  {
+  	"ParameterKey": "Route53HostedZone",
+	  "ParameterValue": "beefree.io."
+  }
+]

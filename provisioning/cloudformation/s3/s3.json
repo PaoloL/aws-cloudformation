@@ -1,0 +1,104 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+
+    "Description" : "PreProduction - Demo on Cloud S3 Tier",
+
+    "Mappings" : {
+        "RegionMap" : {
+            "us-east-1" : { "S3hostedzoneID" : "Z3AQBSTGFYJSTF", "websiteendpoint" : "s3-website-us-east-1.amazonaws.com" },
+            "us-west-1" : { "S3hostedzoneID" : "Z2F56UZL2M1ACD", "websiteendpoint" : "s3-website-us-west-1.amazonaws.com" },
+            "us-west-2" : { "S3hostedzoneID" : "Z3BJ6K6RIION7M", "websiteendpoint" : "s3-website-us-west-2.amazonaws.com" },            
+            "eu-west-1" : { "S3hostedzoneID" : "Z1BKCTXD74EZPE", "websiteendpoint" : "s3-website-eu-west-1.amazonaws.com" },
+            "ap-southeast-1" : { "S3hostedzoneID" : "Z3O0J2DXBE1FTB", "websiteendpoint" : "s3-website-ap-southeast-1.amazonaws.com" },
+            "ap-southeast-2" : { "S3hostedzoneID" : "Z1WCIGYICN2BYD", "websiteendpoint" : "s3-website-ap-southeast-2.amazonaws.com" },
+            "ap-northeast-1" : { "S3hostedzoneID" : "Z2M4EHUR26P7ZW", "websiteendpoint" : "s3-website-ap-northeast-1.amazonaws.com" },
+            "sa-east-1" : { "S3hostedzoneID" : "Z31GFT0UA1I2HV", "websiteendpoint" : "s3-website-sa-east-1.amazonaws.com" }
+        }
+    },
+
+    "Parameters": {
+
+        "WWWDomainName": {
+            "Type" : "String"
+        },
+
+        "ThirdLevelDomainName" : {
+            "Type" : "String"
+        },
+
+        "Environment" : {
+            "Type" : "String"
+        }
+    },
+
+    "Resources": {
+
+        "WWWBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": { "Fn::Join": [".", [ {"Ref":"ThirdLevelDomainName"}, {"Ref":"WWWDomainName"} ] ] },              
+                "AccessControl": "PublicRead",
+                "WebsiteConfiguration": {
+                    "IndexDocument":"index.html",
+                    "ErrorDocument":"404.html"
+                },
+                  "RoutingRules": [
+                    {
+                        "RoutingRuleCondition": {
+                            "HttpErrorCodeReturnedEquals": "404",
+                            "KeyPrefixEquals": "out1/"
+                        },
+                        "RedirectRule": {
+                            "HostName": "www.bee.smtpnext.com",
+                            "ReplaceKeyPrefixWith": "#!/"
+                        }
+                    }
+                ]
+            }
+        },
+
+        "WWWReadableDefaultPolicy":
+        {
+            "Type" : "AWS::S3::BucketPolicy",
+            "DependsOn" : "WWWBucket",
+            "Properties" : {
+                "Bucket" : { "Fn::Join" : [ ".", [ { "Ref":"ThirdLevelDomainName" }, { "Ref" : "WWWDomainName" } ] ] },
+                "PolicyDocument" : {
+                    "Statement":[{
+                        "Sid":"AddPerm",
+                        "Effect":"Allow",
+                        "Principal": "*",
+                        "Action":["s3:GetObject"],
+                        "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Fn::Join": [".", [ { "Ref":"ThirdLevelDomainName" }, { "Ref":"WWWDomainName" } ]]}, "/*" ]]}
+                        }
+                    ]
+                }
+            }
+        }, 
+
+        "DNSBucketRecord" : {
+            "Type" : "AWS::Route53::RecordSet",
+            "Properties" : {
+            "HostedZoneName" : { "Fn::Join" : [ ".", [ { "Ref" : "WWWDomainName" }, "" ] ] },
+            "Comment" : { "Fn::Join" : [ "-", [ "Demo", { "Ref" : "Environment"}, "WWW name for S3 Bucket" ] ] },
+            "Name" : { "Fn::Join" : [ ".", [ {"Ref":"ThirdLevelDomainName"}, { "Ref" : "WWWDomainName" } ] ] },
+            "Type" : "A",
+            "AliasTarget": {
+                "HostedZoneId": {"Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3hostedzoneID"]},
+                "DNSName": {"Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "websiteendpoint"]}
+                }
+            }   
+        }
+    },
+
+    "Outputs": {
+        "WebsiteURL": {
+            "Value": {"Fn::GetAtt": ["WWWBucket", "WebsiteURL"]},
+            "Description": "URL for WWW website hosted on S3"
+        },
+        "DNS" : {
+            "Description" : "DNS Name of S3",
+            "Value" :  { "Ref" : "DNSBucketRecord" }
+        }
+    }
+}

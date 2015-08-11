@@ -1,0 +1,115 @@
+[
+  
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "preproduction"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "auth2"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "be"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-8ad033ef"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-8d4c35e8,subnet-bc7d1ccb"
+  },
+  {
+    "ParameterKey": "AmiId",
+    "ParameterValue": "ami-18dc9d6f"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "m3.medium"
+  },
+  {
+    "ParameterKey": "MinInstanceCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "MaxInstanceCount",
+    "ParameterValue": "4"
+  },
+  {
+    "ParameterKey": "HealthCheckGracePeriod",
+    "ParameterValue": "3200"
+  },
+  {
+    "ParameterKey": "CoolDown",
+    "ParameterValue": "300"
+  },
+  {
+    "ParameterKey": "HighCPUThreshold",
+    "ParameterValue": "80"
+  },
+  {
+    "ParameterKey": "LowCPUThreshold",
+    "ParameterValue": "40"
+  },
+  {
+    "ParameterKey": "OutScaleAdjustment",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "InScaleAdjustment",
+    "ParameterValue": "-2"
+  },
+  {
+    "ParameterKey": "TopicName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "TopicEndpoint",
+    "ParameterValue": "webalert@Demo.com"
+  },
+  {
+    "ParameterKey": "TopicProtocol",
+    "ParameterValue": "email"
+  },
+  {
+    "ParameterKey": "ElasticLoadBalancerSecurityGroup",
+    "ParameterValue": "sg-fe445f9b"
+  },
+  {
+    "ParameterKey": "WebServerPort",
+    "ParameterValue": "8000"
+  },
+  {
+    "ParameterKey": "MyIpAddress",
+    "ParameterValue": "192.168.0.0/16"
+  },
+  {
+    "ParameterKey": "PrivateKey",
+    "ParameterValue": "xpeppers.pem"
+  },
+  {
+    "ParameterKey": "InstanceRole",
+    "ParameterValue": "iPanelPlugin"
+  },
+  {
+    "ParameterKey": "OctopusRole",
+    "ParameterValue": "IntegratorPanel_AUTH"
+  },
+  {
+    "ParameterKey": "OctopusRegisterInEnvironments",
+    "ParameterValue": "IntegratorPanel_Preproduction"
+  },
+  {
+    "ParameterKey": "OctopusProject",
+    "ParameterValue": "Integrator Panel"
+  },
+  {
+    "ParameterKey": "S3ConfigurationEndpoint",
+    "ParameterValue": "s3://pre-moc-config/Set-Environment.ps1"
+  }
+]

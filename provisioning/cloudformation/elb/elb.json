@@ -1,0 +1,177 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Demo on Cloud ELB Tier",
+
+  "Parameters" : {
+
+    "Project" : {
+      "Type" : "String"
+    },
+
+    "Environment" : {
+      "Type" : "String"
+    },
+	
+    "Service" : {
+      "Type" : "String"
+    },
+
+    "Role" : {
+      "Type" : "String"
+    },
+
+    "VpcId" : {
+      "Type" : "String"
+    },
+
+    "Subnets" : {
+      "Type" : "CommaDelimitedList"
+    },
+
+    "WebServerPort" : {
+      "Type" : "String",
+      "Default" : "80"
+    },
+
+     "IngressCidrIP" : {
+      "Type" : "String"
+    },
+	
+	"HealthCheckUrl" : {
+		"Type" : "String"
+	},
+
+    "SSLCertificateId" : {
+      "Type" : "String"
+    },
+	
+	"Route53HostedZone" : {
+		"Type" : "String"
+	}
+  },
+
+  "Resources" : {
+
+    "LoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties" : {
+        "LoadBalancerName" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role"} ]]},
+        "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+        "Subnets" : { "Ref" : "Subnets" },
+        "CrossZone" : "true",
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "Protocol" : "HTTP",
+          "InstancePort" : { "Ref" : "WebServerPort" },
+          "InstanceProtocol" : "HTTP"
+        },
+        {
+          "LoadBalancerPort" : "443",
+          "Protocol" : "HTTPS",
+          "InstancePort" : { "Ref" : "WebServerPort" },
+          "InstanceProtocol" : "HTTP",
+          "SSLCertificateId" : { "Ref" : "SSLCertificateId" }
+        }],
+        "HealthCheck" : {
+          "Target" : { "Fn::Join" : [ "", ["HTTP:", { "Ref" : "WebServerPort" }, { "Ref" : "HealthCheckUrl" }]]},
+          "HealthyThreshold" : "3",
+          "UnhealthyThreshold" : "5",
+          "Interval" : "30",
+          "Timeout" : "25"
+        },
+        "ConnectionDrainingPolicy" : {
+          "Enabled" : "true",
+          "Timeout" : "5"
+        },
+        "Tags" : [
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" }
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" }
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"}
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"}
+          }
+        ]
+      }
+    },
+
+    "LoadBalancerSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable HTTP access on port 80",
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "443",
+          "ToPort" : "443",
+          "CidrIp" : { "Ref" : "IngressCidrIP" }
+        } ],
+        "Tags" : [
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" }
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" }
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"}
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"}
+          }
+        ]
+      }
+    },
+	
+  	"LoadBalancerDNSRecord" : {
+  	 "Type" : "AWS::Route53::RecordSet",
+  	      "Properties" : {
+  	        "HostedZoneName" : { "Ref" : "Route53HostedZone" },
+  	        "Comment" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"} , { "Ref" : "Environment"}, { "Ref" : "Service"}," DNS name" ]]},
+			      "Name" : { "Fn::Join" : [ ".", [ { "Ref" : "Service"}, { "Ref" : "Project"}, { "Ref" : "Route53HostedZone" } ] ] },
+            "Type" : "A",
+            "AliasTarget" : {
+                "HostedZoneId" : { "Fn::GetAtt" : ["LoadBalancer", "CanonicalHostedZoneNameID"] },
+                "DNSName" : { "Fn::GetAtt" : ["LoadBalancer","CanonicalHostedZoneName"] }
+            }
+  	      }	  
+  	}
+	   
+  },
+
+  "Outputs" : {
+    "URL" : {
+      "Description" : "Load balancer url",
+      "Value" :  { "Fn::Join" : [ "", [ "http://", { "Fn::GetAtt" : [ "LoadBalancer", "DNSName" ]}]]}
+    },
+	
+    "DNS" : {
+      "Description" : "DNS Name of Service",
+      "Value" :  { "Ref" : "LoadBalancerDNSRecord" }
+    },
+
+    "ElasticLoadBalancer" : {
+      "Description" : "Load balancer id",
+      "Value" :  { "Ref" : "LoadBalancer" }
+    },
+
+    "LoadBalancerSecurityGroup" : {
+      "Description" : "Load balancer security group id",
+      "Value" :  { "Ref": "LoadBalancerSecurityGroup" }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "name": "Ipanel Preproduction Test",
+  "stacks": [
+    {
+      "name": "demo-preproduction-elb",
+      "template_file": "./cloudformation/elb/elb.json",
+      "parameters_file": "./cloudformation/elb/preproduction.json",
+      "dependencies": []
+    },
+    {
+      "name": "demo-preproduction-web",
+      "template_file": "./cloudformation/web/web.json",
+      "parameters_file": "./cloudformation/web/preproduction.json",
+      "dependencies": [
+        {
+          "stack": "demo-preproduction-elb",
+          "mapping": [
+            {
+              "output": "LoadBalancerSecurityGroup",
+              "input": "ElasticLoadBalancerSecurityGroup"
+            },
+            {
+              "output": "ElasticLoadBalancer",
+              "input": "LoadBalancer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-preproduction-cache",
+      "template_file": "./cloudformation/elasticache/elasticache.json",
+      "parameters_file": "./cloudformation/elasticache/preproduction.json",
+      "dependencies": [
+        {
+          "stack": "demo-preproduction-web",
+          "mapping": [
+            {
+              "output": "SecurityGroup",
+              "input": "BackendInstanceSecurityGroup"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-preproduction-rds",
+      "template_file": "./cloudformation/rds/rds.json",
+      "parameters_file": "./cloudformation/rds/preproduction.json",
+      "dependencies": [
+        {
+          "stack": "demo-preproduction-cache",
+          "mapping": [
+            {
+              "output": "ClusterSecurityGroup",
+              "input": "APIBackendInstanceSecurityGroup"
+            },
+            {
+              "output": "ClusterSecurityGroup",
+              "input": "AUTHBackendInstanceSecurityGroup"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

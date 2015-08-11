@@ -1,0 +1,351 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "MailUP on Cloud WEB Tier",
+
+  "Parameters" : {
+
+    "Project" : {
+      "Type" : "String"
+    },
+
+    "Environment" : {
+      "Type" : "String"
+    },
+  	
+    "Service" : {
+      "Type" : "String"
+    },
+
+    "Role" : {
+      "Type" : "String"
+    },
+
+    "VpcId" : {
+      "Type" : "String"
+    },
+
+    "Subnets" : {
+      "Type" : "CommaDelimitedList"
+    },
+
+    "AmiId" : {
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Type" : "String"
+    },
+
+    "MinInstanceCount" : {
+      "Type" : "Number"
+    },
+
+    "HealthCheckGracePeriod" : {
+      "Type" : "Number"
+    },
+
+    "CoolDown" : {
+      "Type" : "String"
+    },
+
+    "MaxInstanceCount" : {
+      "Type" : "Number"
+    },
+
+    "HighCPUThreshold" : {
+      "Type" : "String"
+    },
+
+    "LowCPUThreshold" : {
+      "Type" : "String"
+    },
+
+    "OutScaleAdjustment" : {
+      "Type" : "String"
+    },
+
+    "InScaleAdjustment" : {
+      "Type" : "String"
+    },
+
+    "ElasticLoadBalancerSecurityGroup" : {
+      "Type" : "String"
+    },
+
+    "LoadBalancer" : {
+      "Type" : "String"
+    },
+  	
+    "WebServerPort" : {
+      "Type" : "String"
+    },
+  	
+    "PrivateKey" : {
+      "Type" : "String"
+    },
+
+    "MyIpAddress" : {
+      "Type" : "String"
+    },
+  	
+    "InstanceRole" : {
+  	  "Type" : "String"
+  	},
+  	
+  	"OctopusRole" : {
+  	  "Type" : "String"
+  	},
+  	
+  	"TopicName" : {
+  	  "Type" : "String"
+  	},
+
+    "TopicEndpoint" : {
+      "Type" : "String"
+    },
+
+    "TopicProtocol" : {
+      "Type" : "String"
+    },
+
+    "OctopusProject" : {
+      "Type" : "String"
+    },
+    
+    "OctopusRegisterInEnvironments" : {
+      "Type" : "String"
+    },
+
+    "S3ConfigurationEndpoint" : {
+      "Type" : "String"
+    }
+  },
+
+  "Conditions" : {
+      "CreateProdResources" : { "Fn::Equals" : [{"Ref" : "Environment"}, "production"] },
+      "CreatePreProdResources" : { "Fn::Equals" : [{"Ref" : "Environment"}, "preproduction"]},
+      "CreateTestResources" : { "Fn::Equals" : [{"Ref" : "Environment"}, "test"]},
+      "CreateDevResources" : { "Fn::Equals" : [{"Ref" : "Environment"}, "developing"]},
+      "CreateNewTopic": { "Fn::Equals" : [ { "Ref": "TopicName" }, "" ] }
+    },
+
+  "Resources" : {
+
+    "WebServerGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "HealthCheckGracePeriod" : { "Ref" : "HealthCheckGracePeriod" },
+        "Cooldown" : { "Ref" : "CoolDown" },
+        "HealthCheckType" : "ELB",
+        "AvailabilityZones" : [ "eu-west-1a", "eu-west-1b" ],
+        "VPCZoneIdentifier" : { "Ref" : "Subnets" },
+        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+        "MinSize" : { "Ref" : "MinInstanceCount" },
+        "MaxSize" : { "Ref" : "MaxInstanceCount" },
+        "DesiredCapacity" : { "Ref" : "MinInstanceCount" },
+        "LoadBalancerNames" : [{ "Ref" : "LoadBalancer" }],
+        "MetricsCollection": [ { "Granularity": "1Minute" } ],
+        "Tags" : [ 
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]},
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" },
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" },
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"},
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"},
+            "PropagateAtLaunch" : "true"
+          }
+        ]
+      }
+    },
+
+    "LaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+  	  "Metadata" : {
+  	    "AWS::CloudFormation::Init" : {
+  	  			"configSets": {
+  	  				"config_instance":[ "download", "deploy" ]
+  	  			},
+  			
+  	  			"download" : {
+  				    "commands" : {
+  	  				 "1-download-script-file" : {
+  	  				   "command": { "Fn::Join" : [" ", [ "powershell.exe -command Invoke-command {c:\\'Program Files'\\Amazon\\AWSCLI\\aws s3 cp", { "Ref" : "S3ConfigurationEndpoint" }, "c:\\PsScripts}" ]]}
+                },  
+  						  "2-unblock-file" : {
+  							 "command": "powershell.exe -command Invoke-command {Unblock-File c:\\PsScripts\\Set-Environment.ps1 }"
+  						  }
+  					 }
+  	  			},
+  				
+  	  			"deploy" : {
+  					 "commands" : {
+  					   "1-set-environment" : {
+  							"command": { "Fn::Join" : ["",["powershell.exe -command Invoke-Command {c:\\PsScripts\\Set-Environment.ps1 -yourApiKey 'API-XNIFU3VXH18JOKF48OFXJUZNJLG' -octopusServerUrl 'http://octopusdeploy.moc.awspre.local/octopus' -registerInEnvironments '", { "Ref" : "OctopusRegisterInEnvironments" }, "' -registerInRoles '", { "Ref" : "OctopusRole" }, "' -octopusServerThumbprint '03A0F94491F41349602F928680BE3BFB6863ABE1' -project '", { "Ref" : "OctopusProject" } , "' -dodeploy}"]]}
+  	  					}
+  					}
+  				  }
+  	  	}
+  		},
+
+      "Properties" : {
+        "ImageId" : { "Ref" : "AmiId" },
+        "KeyName" : { "Ref" : "PrivateKey" },
+        "SecurityGroups" : [ { "Ref" : "WebServerInstanceSecurityGroup" } ],
+        "InstanceType" : { "Ref" : "InstanceType" },
+  		  "IamInstanceProfile": { "Ref": "InstanceRole" },
+        "AssociatePublicIpAddress" : "false",
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : [" ", [
+              "<powershell>\n",
+  					  	"cfn-init.exe -v -s", { "Ref" : "AWS::StackName" }, "-c config_instance -r LaunchConfig --region", { "Ref" : "AWS::Region" }, "\n",
+  					  "</powershell>\n"
+          ]]}}
+      }
+    },
+
+    "WebServerInstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"} , { "Ref" : "Environment"}, { "Ref" : "Service"}, "Web Server Security Group" ]]},
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" :
+        [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : { "Ref" : "WebServerPort" },
+            "ToPort" : { "Ref" : "WebServerPort" },
+            "SourceSecurityGroupId" : { "Ref" : "ElasticLoadBalancerSecurityGroup" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "3389",
+            "ToPort" : "3389",
+            "CidrIp" : { "Ref" : "MyIpAddress" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "10933",
+            "ToPort" : "10933",
+            "CidrIp" : { "Ref" : "MyIpAddress" }
+          }
+        ],
+        "Tags" : [
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" }
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" }
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"}
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"}
+          }
+        ]
+      }
+    },
+    
+    "CPUAlarmHigh": {
+       "Type": "AWS::CloudWatch::Alarm",
+       "Properties": {
+          "EvaluationPeriods": "10",
+          "Statistic": "Average",
+          "Threshold": { "Ref": "HighCPUThreshold" },
+          "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
+          "Period": "60",
+          "AlarmActions": [ { "Ref": "ScaleUpPolicy" }, { "Fn::If" : [ "CreateNewTopic", {"Ref" : "OperationTopic"}, {"Ref" : "TopicName"} ] } ],
+          "Namespace": "AWS/EC2",
+          "Dimensions": [ {
+             "Name": "AutoScalingGroupName",
+             "Value": { "Ref": "WebServerGroup" }
+          } ],
+          "ComparisonOperator": "GreaterThanThreshold",
+          "MetricName": "CPUUtilization"
+       }
+    },
+
+    "CPUAlarmNormal": {
+       "Type": "AWS::CloudWatch::Alarm",
+       "Properties": {
+          "EvaluationPeriods": "5",
+          "Statistic": "Average",
+          "Threshold": { "Ref": "LowCPUThreshold" },
+          "AlarmDescription": "Alarm if CPU is ok",
+          "Period": "60",
+          "AlarmActions": [ { "Ref": "ScaleDownPolicy" }, { "Fn::If" : [ "CreateNewTopic", {"Ref" : "OperationTopic"}, {"Ref" : "TopicName"} ] } ],
+          "Namespace": "AWS/EC2",
+          "Dimensions": [ {
+             "Name": "AutoScalingGroupName",
+             "Value": { "Ref": "WebServerGroup" }
+          } ],
+          "ComparisonOperator": "LessThanOrEqualToThreshold",
+          "MetricName": "CPUUtilization"
+       }
+    },
+
+    "ScaleUpPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
+        "Cooldown" : { "Ref" : "CoolDown" },
+        "ScalingAdjustment" : { "Ref" : "OutScaleAdjustment" }
+      }
+    },
+
+    "ScaleDownPolicy" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "WebServerGroup" },
+        "Cooldown" : { "Ref" : "CoolDown" },
+        "ScalingAdjustment" : { "Ref" : "InScaleAdjustment" }
+      }
+    },
+
+    "OperationTopic": {
+      "Type" : "AWS::SNS::Topic",
+      "Condition" : "CreateNewTopic",
+      "Properties" : {
+        "DisplayName" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]},
+        "Subscription" : [ 
+          {
+            "Endpoint" : { "Ref" : "TopicEndpoint"},
+            "Protocol" : { "Ref" : "TopicProtocol"}
+          }
+        ],
+        "TopicName" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]}
+      }
+    }
+  },
+
+  "Outputs" : {
+    "SecurityGroup" : {
+      "Description" : "Security Group Instance",
+      "Value" :  { "Ref" : "WebServerInstanceSecurityGroup" }
+    }
+  }
+}
+

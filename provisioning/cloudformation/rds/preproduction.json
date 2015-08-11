@@ -1,0 +1,62 @@
+[
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "preproduction"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "customers"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-8ad033ef"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-8d4c35e8,subnet-bc7d1ccb"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "db.t2.medium"
+  },
+  {
+    "ParameterKey": "MultiAZ",
+    "ParameterValue": "True"
+  },
+  {
+    "ParameterKey": "ReadReplica",
+    "ParameterValue": "False"
+  },
+  {
+    "ParameterKey": "DBUsername",
+    "ParameterValue": "root"
+  },
+  {
+    "ParameterKey": "DBPassword",
+    "ParameterValue": "XYZDemo123"
+  },
+  {
+    "ParameterKey": "DBAllocatedStorage",
+    "ParameterValue": "50"
+  },
+  {
+    "ParameterKey": "APIBackendInstanceSecurityGroup",
+    "ParameterValue": "sg-c384b9a6"
+  },
+   {
+    "ParameterKey": "AUTHBackendInstanceSecurityGroup",
+    "ParameterValue": "sg-c384b9a6"
+  },
+  {
+    "ParameterKey": "ElasticacheSecurityGroup",
+    "ParameterValue": "sg-9a86bbff"
+  },
+  {
+    "ParameterKey": "MyIpAddress",
+    "ParameterValue": "192.168.0.0/16"
+  }
+]

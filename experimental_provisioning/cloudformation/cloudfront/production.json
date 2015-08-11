@@ -1,0 +1,44 @@
+[
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "web"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "front"
+  },
+  {
+    "ParameterKey": "BucketOriginDomainName",
+    "ParameterValue": "ipanel.beefree.io.s3.amazonaws.com"
+  },
+  {
+    "ParameterKey": "CacheTTL",
+    "ParameterValue": "15"
+  },
+  {
+    "ParameterKey": "BucketLog",
+    "ParameterValue": "log.beefree.io.s3.amazonaws.com"
+  },
+  {
+    "ParameterKey": "LogPrefix",
+    "ParameterValue": "access"
+  },
+  {
+    "ParameterKey": "AliasName",
+    "ParameterValue": "developes.beefree.io"
+  },
+  {
+    "ParameterKey": "PriceClass",
+    "ParameterValue": "PriceClass_200"
+  }
+
+
+]

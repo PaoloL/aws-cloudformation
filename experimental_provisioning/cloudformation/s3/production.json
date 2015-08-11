@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "WWWDomainName",
+    "ParameterValue": "beefree.io"
+  },
+  {
+    "ParameterKey": "ThirdLevelDomainName",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  }
+]

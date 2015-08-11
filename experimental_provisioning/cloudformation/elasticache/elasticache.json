@@ -1,0 +1,135 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+
+  	"Description" : "MailUP on Cloud ELASTICACHE Tier",
+
+    "Parameters" : {
+
+      "Project" : {
+        "Type" : "String"
+      },
+		
+	    "Environment" : {
+	      "Type" : "String"
+	    },
+
+	    "Service" : {
+	      "Type" : "String"
+	    },
+
+      "Role" : {
+        "Type" : "String"
+      },
+		
+	    "VpcId" : {
+	      "Type" : "String"
+	    },
+
+      "CacheParametersGroupName" : {
+        "Type" : "String"
+      },
+		
+	    "BackendInstanceSecurityGroup" : {
+	      "Type" : "String"
+	    },
+
+	    "Subnets" : {
+	      "Type" : "CommaDelimitedList"
+	    },
+
+      "ClusterNodeType" : {
+        "Type" : "String"
+      },
+	  
+      "NumberOfNodes" : {
+        "Type" : "Number"
+      },
+
+      "AvailabiltyZonesOfReplica" : {
+        "Type" : "CommaDelimitedList"
+      },
+	  
+      "AgentPort" : {
+        "Type" : "Number"
+      },
+
+      "Route53HostedZone" : {
+        "Type" : "String"
+      }  
+    },
+
+    "Resources" : {
+
+      "RedisReplicationGroup" : {
+        "Type": "AWS::ElastiCache::ReplicationGroup",
+        "Properties": {
+          "ReplicationGroupDescription" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, "redis replication group Master/Slave" ]]},
+          "NumCacheClusters" :  { "Ref" : "NumberOfNodes" },
+          "Engine" : "redis",
+          "Port" : { "Ref" : "AgentPort" },
+          "SecurityGroupIds" : [ { "Ref" : "ElasticacheSecurityGroup" } ],
+          "CacheNodeType" : { "Ref" : "ClusterNodeType" },
+          "PreferredCacheClusterAZs" : { "Ref" : "AvailabiltyZonesOfReplica" },
+          "AutoMinorVersionUpgrade" : "true",
+          "AutomaticFailoverEnabled" : "true",
+          "CacheSubnetGroupName" : { "Ref" : "CacheSubnetGroup" },
+          "EngineVersion" : "2.8.6",
+          "PreferredMaintenanceWindow" : "sat:20:00-sat:23:00",
+          "SnapshotRetentionLimit" : "7",
+          "SnapshotWindow" : "03:30-05:30"
+        }
+      },
+	  
+      "CacheSubnetGroup" : {
+        "Type" : "AWS::ElastiCache::SubnetGroup",
+        "Properties" : {
+          "Description" : "Subnets available for the Elasticache Cluster",
+          "SubnetIds" : { "Ref" : "Subnets" }
+        }
+      },
+
+      "ElasticacheSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"},"Elasticache Security Group" ]]},
+          "VpcId" : { "Ref" : "VpcId" },
+          "SecurityGroupIngress" :
+          [
+            {
+              "IpProtocol" : "tcp",
+              "FromPort" : { "Ref" : "AgentPort" },
+              "ToPort" : { "Ref" : "AgentPort" },
+              "SourceSecurityGroupId" : { "Ref" : "BackendInstanceSecurityGroup" }
+            }	
+          ]
+        }
+      },
+
+      "PrimaryRedisClusterDNSRecord" : {
+        "Type" : "AWS::Route53::RecordSet",
+            "Properties" : {
+              "HostedZoneName" : { "Ref" : "Route53HostedZone" },
+              "Comment" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"} , { "Ref" : "Environment"}, { "Ref" : "Service"}," Redis Cluster endpoint" ]]},
+              "Name" : { "Fn::Join" : [ ".", [ { "Ref" : "Role"}, { "Ref" : "Service"},"01",{ "Ref" : "Project"}, { "Ref" : "Route53HostedZone" } ] ] },
+              "Type" : "CNAME",
+              "TTL" : "900",
+              "ResourceRecords" : [ { "Fn::GetAtt" : [ "RedisReplicationGroup" , "PrimaryEndPoint.Address" ] } ]
+            }   
+      }
+  },
+	
+	"Outputs" : {
+      "ClusterSecurityGroup" : {
+        "Description" : "Elasticache security group id",
+        "Value" :  { "Ref": "ElasticacheSecurityGroup" }
+      },
+      "RedisClusterPrimary" : {
+        "Description" : "The DNS address and port of the primary read-write cache node",
+        "Value" :  { "Fn::Join" : [ ":", [ { "Fn::GetAtt" : [ "RedisReplicationGroup" , "PrimaryEndPoint.Address" ] }, { "Fn::GetAtt" : [ "RedisReplicationGroup" , "PrimaryEndPoint.Port" ] } ] ] }
+        },
+      "RedisClusterSecondary" : {
+        "Description" : "A string with a list of endpoints for the read-only replicas please add this manually to Route53",
+        "Value" : { "Fn::GetAtt" : [ "RedisReplicationGroup" , "ReadEndPoint.Addresses" ] }
+      }
+    }
+}

@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "MailUP on Cloud DISTRIBUTION Tier",
+
+  "Parameters" : {
+
+    "Project" : {
+      "Type" : "String"
+    },
+
+    "Environment" : {
+      "Type" : "String"
+    },
+  	
+    "Service" : {
+      "Type" : "String"
+    },
+
+    "Role" : {
+      "Type" : "String"
+    },
+
+    "BucketOriginDomainName" : {
+      "Type" : "String"
+    },
+
+    "BucketLog" : {
+      "Type" : "String"
+    },
+
+    "LogPrefix" : {
+      "Type" : "String"
+    },
+
+    "AliasName" : {
+      "Type" : "String"
+    },
+
+    "CacheTTL" : {
+      "Type" : "String"
+    },
+
+    "PriceClass" : {
+      "Type" : "String"
+    }
+  },
+
+  "Resources" : {
+
+    "WebDistribution" : {
+    "Type" : "AWS::CloudFront::Distribution",
+      "Properties" : {
+        "DistributionConfig" : {
+            "Origins" : [ {
+                "DomainName": { "Ref" : "BucketOriginDomainName" },
+                "Id" : { "Ref" : "BucketOriginDomainName" },
+                "S3OriginConfig" : {
+                }
+            }],
+            "Enabled" : "true",
+            "Comment" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"},"distribution" ]]},
+            "DefaultRootObject" : "index.html",
+            "Logging" : {
+                "IncludeCookies" : "false",
+                "Bucket" : { "Ref" : "BucketLog" },
+                "Prefix" : { "Ref" : "LogPrefix" }
+            },
+            "Aliases" : [ { "Ref" : "AliasName" } ],
+            "DefaultCacheBehavior" : {
+                "AllowedMethods" : [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ],  
+                "TargetOriginId" : { "Ref" : "BucketOriginDomainName" },
+                 "MinTTL" : { "Ref" : "CacheTTL" },
+                "ForwardedValues" : {
+                    "QueryString" : "true",
+                    "Cookies" : { "Forward" : "all" }
+                },
+
+                "ViewerProtocolPolicy" : "allow-all"
+            },
+           "PriceClass" : { "Ref" : "PriceClass" }
+        }
+      }
+    }
+  },
+
+  "Outputs" : {
+    "SecurityGroup" : {
+      "Description" : "Cloudfront URL",
+      "Value" :  { "Fn::GetAtt" : [ "WebDistribution" , "DomainName" ] }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+[
+  
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "api"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "be"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-6f0af20a"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-ef0d758a,subnet-973b5be0"
+  },
+  {
+    "ParameterKey": "AmiId",
+    "ParameterValue": "ami-18dc9d6f"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "m3.medium"
+  },
+  {
+    "ParameterKey": "MinInstanceCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "MaxInstanceCount",
+    "ParameterValue": "4"
+  },
+  {
+    "ParameterKey": "HealthCheckGracePeriod",
+    "ParameterValue": "900"
+  },
+  {
+    "ParameterKey": "CoolDown",
+    "ParameterValue": "900"
+  },
+  {
+    "ParameterKey": "HighCPUThreshold",
+    "ParameterValue": "80"
+  },
+  {
+    "ParameterKey": "LowCPUThreshold",
+    "ParameterValue": "40"
+  },
+  {
+    "ParameterKey": "OutScaleAdjustment",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "InScaleAdjustment",
+    "ParameterValue": "-2"
+  },
+  {
+    "ParameterKey": "TopicName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "TopicEndpoint",
+    "ParameterValue": "webalert@Demo.com"
+  },
+  {
+    "ParameterKey": "TopicProtocol",
+    "ParameterValue": "email"
+  },
+  {
+    "ParameterKey": "ElasticLoadBalancerSecurityGroup",
+    "ParameterValue": "sg-32849e57"
+  },
+  {
+    "ParameterKey": "WebServerPort",
+    "ParameterValue": "9000"
+  },
+  {
+    "ParameterKey": "MyIpAddress",
+    "ParameterValue": "192.168.0.0/16"
+  },
+  {
+    "ParameterKey": "PrivateKey",
+    "ParameterValue": "Demoit.pem"
+  },
+  {
+    "ParameterKey": "InstanceRole",
+    "ParameterValue": "iPanelPlugin"
+  },
+  {
+    "ParameterKey": "OctopusRole",
+    "ParameterValue": "IntegratorPanel_API"
+  },
+  {
+    "ParameterKey": "OctopusRegisterInEnvironments",
+    "ParameterValue": "IntegratorPanel_Production"
+  },
+  {
+    "ParameterKey": "OctopusProject",
+    "ParameterValue": "Integrator Panel"
+  },
+  {
+    "ParameterKey": "S3ConfigurationEndpoint",
+    "ParameterValue": "s3://Demo-conifg-scripts/bee-ipanel/Set-Environment.ps1"
+
+  }
+]

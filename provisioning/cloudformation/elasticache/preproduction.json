@@ -1,0 +1,56 @@
+[
+    {
+      "ParameterKey": "Project",
+      "ParameterValue": "ipanel"
+    },
+    {
+      "ParameterKey": "CacheParametersGroupName",
+      "ParameterValue": "default.redis2.8"
+    },
+    
+  	{
+    	"ParameterKey": "Environment",
+    	"ParameterValue": "preproduction"
+  	},
+  	{
+    	"ParameterKey": "Service",
+    	"ParameterValue": "API"
+  	},
+    {
+      "ParameterKey": "Role",
+      "ParameterValue": "redis"
+    },
+  	{
+    	"ParameterKey": "VpcId",
+    	"ParameterValue": "vpc-8ad033ef"
+  	},
+  	{
+    	"ParameterKey": "Subnets",
+    	"ParameterValue": "subnet-8d4c35e8,subnet-bc7d1ccb"
+  	},
+    {
+      "ParameterKey": "AvailabiltyZonesOfReplica",
+      "ParameterValue": "eu-west-1a,eu-west-1b"
+    },
+    {
+      "ParameterKey": "ClusterNodeType",
+      "ParameterValue": "cache.m3.large"
+    },
+    {
+      "ParameterKey": "NumberOfNodes",
+      "ParameterValue": "2"
+    },
+    {
+      "ParameterKey": "AgentPort",
+      "ParameterValue": "6379"
+    },
+    {
+      "ParameterKey": "BackendInstanceSecurityGroup",
+      "ParameterValue": "sg-af6d76ca"
+    },
+    {
+    "ParameterKey": "Route53HostedZone",
+    "ParameterValue": "smtpnext.com."
+    }
+  ]
+  

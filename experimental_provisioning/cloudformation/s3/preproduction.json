@@ -1,0 +1,14 @@
+[
+  {
+    "ParameterKey": "WWWDomainName",
+    "ParameterValue": "smtpnext.com"
+  },
+  {
+    "ParameterKey": "ThirdLevelDomainName",
+    "ParameterValue": "www.moc"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "preproduction"
+  }
+]

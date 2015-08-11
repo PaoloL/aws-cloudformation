@@ -1,0 +1,44 @@
+[
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "preproduction"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "web"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "front"
+  },
+  {
+    "ParameterKey": "BucketOriginDomainName",
+    "ParameterValue": "www.bee.smtpnext.com.s3.amazonaws.com"
+  },
+  {
+    "ParameterKey": "CacheTTL",
+    "ParameterValue": "15"
+  },
+  {
+    "ParameterKey": "BucketLog",
+    "ParameterValue": "log.bee.smtpnext.com.s3.amazonaws.com"
+  },
+  {
+    "ParameterKey": "LogPrefix",
+    "ParameterValue": "access"
+  },
+  {
+    "ParameterKey": "AliasName",
+    "ParameterValue": "cdn.bee.smtpnext.com"
+  },
+  {
+    "ParameterKey": "PriceClass",
+    "ParameterValue": "PriceClass_200"
+  }
+
+
+]
