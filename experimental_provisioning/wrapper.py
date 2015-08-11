@@ -4,6 +4,7 @@ import boto.cloudformation as cloudformation
 from boto import exception as boto_exception
 
 REGION = 'eu-west-1'
+INFRASTRUCTURE_FILE = './infrastructure.json'
 
 def read_conf(path):
     with open(path, 'r') as f:
@@ -66,8 +67,7 @@ def create_infrastructure(infrastructure_file,connection):
 def main():
     #make a cloudformation connection
     cf_connection = cloudformation.connect_to_region(REGION)
-    infrastructure_file = './infrastructure.json'
-    create_infrastructure(infrastructure_file,cf_connection)
+    create_infrastructure(INFRASTRUCTURE_FILE,cf_connection)
 
 if __name__ == '__main__':
     main()

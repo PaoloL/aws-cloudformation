@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
 
-  "Description" : "PreProduction - MailUP on Cloud RDS Tier",
+  "Description" : "Demo on Cloud RDS Tier",
 
   "Parameters" : {
 

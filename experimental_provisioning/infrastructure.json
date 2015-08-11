@@ -53,14 +53,23 @@
           "mapping": [
             {
               "output": "ClusterSecurityGroup",
+              "input": "ElasticacheSecurityGroup"
+            }
+          ]
+        },
+        {
+          "stack": "demo-preproduction-web",
+          "mapping": [
+            {
+              "output": "SecurityGroup",
               "input": "APIBackendInstanceSecurityGroup"
             },
             {
-              "output": "ClusterSecurityGroup",
+              "output": "SecurityGroup",
               "input": "AUTHBackendInstanceSecurityGroup"
             }
           ]
-        }
+        }     
       ]
     }
   ]
