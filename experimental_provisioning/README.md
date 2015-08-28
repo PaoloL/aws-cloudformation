@@ -5,50 +5,39 @@ In this post i would like to introduce an alternative approach to this practice:
 
 ### infrastructure.json
 
-In this file we have a list of stacks to create (if stack is not defined will be not created). Each stack has a name, a template file and parameters file and relative dependencies from other stacks/tier. A dependencies is an array of dependent stack and relative resources mappings. For example the demo-preproduction-cache stack has a relationship with demo-preproduction-web stack where the security group created during web stack creation is an input for demo-preproduction-cache, because the security group of Elasticache cluster accept connection only from security group of EC2 instances on WEB Tier. For example output of Web Stack
+In this file we have a list of stacks to create (if stack is note defined will be not created). Each stack has a name, a template file, a parameters file and an array of dependencies and fix. The array of dependencies is a set of dependency from other stacks/tier, for example the security group in output created during web stack creation is an input for demo-preproduction-cache, because the security group of Elasticache cluster accept connection only from security group of EC2 instances on WEB Tier. The array of fix is a set di python modules that will be executed for fix missing action on Cloudformation service. For example with fix module we can tag the elasticache cluster, infact at this moment the tags on elasticache cluster are not supported by Cloudformation.  
+
+
+This is an example of stack with dependencies and fixe
 
 ```
-"Outputs" : {
-  "SecurityGroup" : 
-   {
-    "Description" : "Security Group Instance",
-    "Value" : 
-      { 
-        "Ref" : "WebServerInstanceSecurityGroup" 
-      }
-   }
-}
-```
-
-is now an input for Elasticache stack
-
-```
-BackendInstanceSecurityGroup" : 
-{ 
-  "Type" : "String" 
-}
-```
-
-and dependencies are resolved by this description
-
-```
-"dependencies": 
-[
-  {
-    "stack": "demo-preproduction-web",
-    "mapping": 
-    [ 
-      { 
-        "output": "SecurityGroup", 
-        "input": "BackendInstanceSecurityGroup" 
-      } 
-    ]
-  } 
-]
+{
+      "name": "demo-preproduction-cache",
+      "template_file": "./cloudformation/elasticache/elasticache.json",
+      "parameters_file": "./cloudformation/elasticache/preproduction.json",
+      "dependencies": [
+        {
+          "stack": "demo-preproduction-web",
+          "mapping": [
+            {
+              "output": "SecurityGroup",
+              "input": "BackendInstanceSecurityGroup"
+            }
+          ]
+        }
+      ],
+      "fix" : [
+        {
+          "fix_file" : "fix/fixredis.py"
+        }
+      ]
+    }
 ```
 
 
 ### wrapper.py
+
+The wrapper.py script is the root of our logic. The script parse infrastructure.json file retrieve the stacks that must to be create, resolve dependencies and execute fix.
 
 ```
 maverick$ python wrapper.py
