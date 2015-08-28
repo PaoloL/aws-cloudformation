@@ -1,7 +1,7 @@
 #  Cloudformation and Boto
 ## Aternative approach to Stacks creation
 
-In this post i would like to introduce an alternative approach to this practice: decompose the template to smaller template, one for each tier and add a file (JSON) that describe which tier should be active, the relative template and parameters file and what are its relations with the other tiers. A python script will resolve dependencies between tier tha we decided to create.
+I would like to introduce an alternative approach to this practice: decompose a monolithic cloudformation template in to smaller template, one for each tier, and add a file (JSON) that describe which tier should be active/created, the relative template and parameters file, what are its relations with the other tiers and eventually script to execute for fix missing action on Cloudformation Engine. We have a JSON file that describe the acrhitecture (the tiers of our architecture and relative dependencies and fix) plus a python script that parse this file and resolve denpendencie and launch fix modules.
 
 ### infrastructure.json
 
