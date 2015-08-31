@@ -1,0 +1,229 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "MailUP on Cloud NAT Tier",
+
+  "Parameters" : {
+
+    "Project" : {
+      "Type" : "String"
+    },
+
+    "Environment" : {
+      "Type" : "String"
+    },
+  	
+    "Service" : {
+      "Type" : "String"
+    },
+
+    "Role" : {
+      "Type" : "String"
+    },
+
+    "VpcId" : {
+      "Type" : "String"
+    },
+
+    "Subnets" : {
+      "Type" : "CommaDelimitedList"
+    },
+
+    "AmiId" : {
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Type" : "String"
+    },
+
+    "HealthCheckGracePeriod" : {
+      "Type" : "Number"
+    },
+
+    "PrivateKey" : {
+      "Type" : "String"
+    },
+
+    "MyIpAddress" : {
+      "Type" : "String"
+    },
+  	
+    "InstanceRole" : {
+  	  "Type" : "String"
+  	},
+  	
+  	"TopicName" : {
+  	  "Type" : "String"
+  	},
+
+    "TopicEndpoint" : {
+      "Type" : "String"
+    },
+
+    "TopicProtocol" : {
+      "Type" : "String"
+    },
+
+    "BackEndRouteTable" : {
+      "Type" : "String"
+    },
+
+    "BackEndInstancesIpAddress" : {
+      "Type" : "String"
+    }
+
+  },
+
+  "Conditions" : {
+      "CreateNewTopic": { "Fn::Equals" : [ { "Ref": "TopicName" }, "" ] }
+    },
+
+  "Resources" : {
+
+    "NatInstanceGroup" : {
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "HealthCheckType" : "EC2",
+        "AvailabilityZones" : [ "eu-west-1a", "eu-west-1b", "eu-west-1c" ],
+        "VPCZoneIdentifier" : { "Ref" : "Subnets" },
+        "LaunchConfigurationName" : { "Ref" : "LaunchConfig" },
+        "MinSize" : "1",
+        "MaxSize" : "1",
+        "MetricsCollection": [ { "Granularity": "1Minute" } ],
+        "NotificationConfigurations" : [
+          {
+            "NotificationTypes" : [ "autoscaling:EC2_INSTANCE_LAUNCH", "autoscaling:EC2_INSTANCE_LAUNCH_ERROR", "autoscaling:EC2_INSTANCE_TERMINATE", "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"],
+            "TopicARN" : { "Ref" : "OperationTopic" }
+          }
+        ],
+        "Tags" : [ 
+          {
+            "Key" : "Name",
+            "Value" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]},
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" },
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" },
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"},
+            "PropagateAtLaunch" : "true"
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"},
+            "PropagateAtLaunch" : "true"
+          }
+        ]
+      }
+    },
+
+    "LaunchConfig" : {
+      "Type" : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "ImageId" : { "Ref" : "AmiId" },
+        "KeyName" : { "Ref" : "PrivateKey" },
+        "SecurityGroups" : [ { "Ref" : "NatInstanceSecurityGroup" } ],
+        "InstanceType" : { "Ref" : "InstanceType" },
+  		  "IamInstanceProfile": { "Ref": "InstanceRole" },
+        "AssociatePublicIpAddress" : "true",
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+              "#!/bin/bash\n",
+              "python << END\n",
+              "from boto import ec2\n",
+              "from boto import vpc\n", 
+              "import urllib2\n",
+              "REGION = '",{"Ref" : "AWS::Region"},"'\n",
+              "RT = '",{"Ref" : "BackEndRouteTable"},"'\n",
+              "DESTINATION = '0.0.0.0/0'\n",
+  					  "my_instance_id = urllib2.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()\n",
+              "connection_to_ec2 = ec2.connect_to_region(REGION)\n",
+              "connection_to_ec2.modify_instance_attribute(my_instance_id, attribute='sourceDestCheck', value=False)\n",
+              "connection_to_vpc = vpc.connect_to_region(REGION)\n",
+              "connection_to_vpc.replace_route(RT, DESTINATION, instance_id=my_instance_id)\n",
+              "END\n"
+          ]]}}
+      }
+    },
+
+    "NatInstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"} , { "Ref" : "Environment"}, { "Ref" : "Service"}, "Web Server Security Group" ]]},
+        "VpcId" : { "Ref" : "VpcId" },
+        "SecurityGroupIngress" :
+        [
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "22",
+            "ToPort" : "22",
+            "CidrIp": { "Ref" : "MyIpAddress" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "80",
+            "ToPort" : "80",
+            "CidrIp": { "Ref" : "BackEndInstancesIpAddress" }
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort" : "443",
+            "ToPort" : "443",
+            "CidrIp": { "Ref" : "BackEndInstancesIpAddress" }
+          }
+        ],
+        "Tags" : [
+          {
+            "Key" : "Project",
+            "Value" : { "Ref" : "Project" }
+          },
+          {
+            "Key" : "Environment",
+            "Value" : { "Ref" : "Environment" }
+          },
+          {
+            "Key" : "Service",
+            "Value" : { "Ref" : "Service"}
+          },
+          {
+            "Key" : "Role",
+            "Value" : { "Ref" : "Role"}
+          }
+        ]
+      }
+    },
+
+    "OperationTopic": {
+      "Type" : "AWS::SNS::Topic",
+      "Condition" : "CreateNewTopic",
+      "Properties" : {
+        "DisplayName" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]},
+        "Subscription" : [ 
+          {
+            "Endpoint" : { "Ref" : "TopicEndpoint"},
+            "Protocol" : { "Ref" : "TopicProtocol"}
+          }
+        ],
+        "TopicName" : { "Fn::Join" : [ "-", [ { "Ref" : "Project"}, { "Ref" : "Environment"}, { "Ref" : "Service"}, { "Ref" : "Role" } ]]}
+      }
+    }
+
+  },
+
+  "Outputs" : {
+    "SecurityGroup" : {
+      "Description" : "Security Group Instance",
+      "Value" :  { "Ref" : "NatInstanceSecurityGroup" }
+    }
+  }
+}
+
