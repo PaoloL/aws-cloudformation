@@ -1,0 +1,3 @@
+# High Availability on NAT Instance 
+
+On AWS instances on private subnets should not be directly addressable from the Internet. In this case we need NAT instance in public subent for routing the traffic coming out from private instances. A NAT instance can introduce a single point of failure to our VPC's, then is important to create a High Availability solution. Below a solution that use a Cloudformation template for 1:1 Autoscaling group using a python script that update routing table in case of failover. This is an alternative to the solution described by [Jinesh Varia] (http://aws.amazon.com/articles/2781451301784570)
