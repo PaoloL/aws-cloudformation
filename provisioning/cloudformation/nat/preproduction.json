@@ -2,7 +2,7 @@
   
   {
     "ParameterKey": "Project",
-    "ParameterValue": "ipanel"
+    "ParameterValue": "Demo"
   },
   {
     "ParameterKey": "Environment",
@@ -18,11 +18,7 @@
   },
   {
     "ParameterKey": "VpcId",
-    "ParameterValue": "vpc-8ad033ef"
-  },
-  {
-    "ParameterKey": "Subnets",
-    "ParameterValue": "subnet-8d4c35e8,subnet-bc7d1ccb"
+    "ParameterValue": "vpc-88ad33eX"
   },
   {
     "ParameterKey": "AmiId",
