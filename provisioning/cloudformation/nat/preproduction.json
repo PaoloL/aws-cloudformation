@@ -1,0 +1,71 @@
+[
+  
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "ipanel"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "preproduction"
+  },
+  {
+    "ParameterKey": "Service",
+    "ParameterValue": "nat"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": "all"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-8ad033ef"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-8d4c35e8,subnet-bc7d1ccb"
+  },
+  {
+    "ParameterKey": "AmiId",
+    "ParameterValue": "ami-6975eb1e"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "m3.medium"
+  },
+  {
+    "ParameterKey": "BackEndRouteTable",
+    "ParameterValue": "rtb-aa118bcf"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-620f7707,subnet-243d5d53,subnet-75fc462c"
+  },
+  {
+    "ParameterKey": "TopicName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "TopicEndpoint",
+    "ParameterValue": "webalert@mailup.com"
+  },
+  {
+    "ParameterKey": "TopicProtocol",
+    "ParameterValue": "email"
+  },
+  {
+    "ParameterKey": "MyIpAddress",
+    "ParameterValue": "192.168.0.0/16"
+  },
+  {
+    "ParameterKey": "BackEndInstancesIpAddress",
+    "ParameterValue": "10.96.0.0/16"
+  },
+  {
+    "ParameterKey": "PrivateKey",
+    "ParameterValue": "xpeppers.pem"
+  },
+  {
+    "ParameterKey": "InstanceRole",
+    "ParameterValue": "nat_instance"
+  }
+]
